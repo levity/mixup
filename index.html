@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <style>
+      body, html {
+        width: 100%; height: 100%; margin: 0; padding: 0;
+        background: #fff;}
+      .player {
+        position: absolute;
+        padding: 3px 5px; border-radius: 5px;
+        background: #666; color: #fff; font: 9pt helvetica}
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="/nowjs/now.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      now.ready(function() {
+        $(function() {
+          var players = {}, field = $('body');
+          now.name = prompt("What's your name?", "");
+          now.seeMove = function(name, ev) {
+            if (!players[name]) {
+              players[name] = $('<div class="player"/>').text(name);
+              field.append(players[name]);
+            }
+            players[name].css({
+              left: ev.x * field.width(), 
+              top: ev.y * field.height()
+            });
+          };
+          field.mousemove(function(event) {
+            now.move({
+              x: event.pageX / field.width(), 
+              y: event.pageY / field.height()
+            });
+          });
+        });        
+      });
+    </script>
+  </head>
+  <body>
+    
+  </body>
+</html>
