@@ -1,42 +1,73 @@
 <html>
   <head>
     <style>
-      body, html {
-        width: 100%; height: 100%; margin: 0; padding: 0;
-        background: #fff;}
+      body, html, canvas {
+        width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+        background: #ccc;}
       .player {
         position: absolute;
         padding: 3px 5px; border-radius: 5px;
         background: #666; color: #fff; font: 9pt helvetica}
     </style>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript" charset="utf-8"></script>-->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/nowjs/now.js"></script>
-    <script type="text/javascript" charset="utf-8">
-      now.ready(function() {
-        $(function() {
-          var players = {}, field = $('body');
-          now.name = prompt("What's your name?", "");
-          now.seeMove = function(name, ev) {
-            if (!players[name]) {
-              players[name] = $('<div class="player"/>').text(name);
-              field.append(players[name]);
-            }
-            players[name].css({
-              left: ev.x * field.width(), 
-              top: ev.y * field.height()
-            });
-          };
-          field.mousemove(function(event) {
-            now.move({
-              x: event.pageX / field.width(), 
-              y: event.pageY / field.height()
-            });
-          });
-        });        
-      });
-    </script>
   </head>
   <body>
+    <canvas></canvas>
+    <script type="text/javascript" charset="utf-8">
+      var givenName = prompt("What's your name?", ""), players = {}, field = $('body'),
+        canvas = $('canvas').attr('width', field.width()).attr('height', field.height());
+        ctx = canvas[0].getContext('2d');
+        
+      var lineBetweenPlayers = function(name1, name2) {
+        ctx.beginPath();
+        var p1 = players[name1].offset(), p2 = players[name2].offset();
+        var center = {x: (p1.left + p2.left)/2, y: (p1.top + p2.top)/2};
+        var slope = -(p2.left - p1.left) / (p2.top - p1.top);
+        var p1a = {x: 0, y: center.y - center.x * slope};
+        var p2a = {x: canvas.width(), y: (canvas.width() - center.x) * slope + center.y};
+        ctx.moveTo(p1a.x, p1a.y);
+        ctx.lineTo(p2a.x, p2a.y);
+        ctx.stroke();
+      };
     
+      now.ready(function() {
+        now.name = givenName;
+        
+        now.seeMove = function(name, ev) {
+          if (!players[name]) {
+            players[name] = $('<div class="player"/>').text(name);
+            field.append(players[name]);
+          }
+          players[name].css({
+            left: ev.x * field.width() - players[name].width()/2, 
+            top: ev.y * field.height() - 10
+          });
+          
+          ctx.clearRect(0, 0, canvas.width(), canvas.height());
+          
+          var names = []; $.each(players, function(k, v) { names.push(k); });
+          for (var i=0; i<names.length; i++) {
+            for (var j=i+1; j<names.length; j++) {
+              lineBetweenPlayers(names[i], names[j]);
+            }
+          }          
+        };
+        
+        now.remove = function(name) {
+          players[name].remove();
+          delete players[name];
+        };
+        
+        field.mousemove(function(event) {
+          now.move({
+            x: event.pageX / field.width(), 
+            y: event.pageY / field.height()
+          });
+        });
+        
+      });
+    </script>
   </body>
 </html>
